@@ -1,0 +1,18 @@
+# Dependencies
+node_modules
+# Local env/config
+# Git metadata
+.git
+# Logs
+*.log
+# MacOS metadata
+.DS_Store
+# IDE/editor dirs
+.vscode
+.idea
+# Build artifacts (adjust if you have a build output folder)
+dist
+build
+# Docker files themselves (optional)
+Dockerfile
+docker-compose.yml
