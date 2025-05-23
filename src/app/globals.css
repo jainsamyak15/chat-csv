@@ -1,129 +1,77 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.75rem;
+  }
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 26, 26, 26;
-  --background-end-rgb: 13, 13, 13;
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 0 0% 95%;
+    --card: 24 9.8% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85.7% 97.3%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142.4 71.8% 29.2%;
+  }
 }
 
-.dark {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 13, 13, 13;
-  --background-end-rgb: 26, 26, 26;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
-/* Smooth Scrolling */
-html {
-  scroll-behavior: smooth;
+.animate-gradient {
+  background-size: 300%;
+  -webkit-animation: animatedgradient 6s ease infinite alternate;
+  animation: animatedgradient 6s ease infinite alternate;
 }
 
-/* Base Styles */
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-    to bottom,
-    rgb(var(--background-start-rgb)),
-    rgb(var(--background-end-rgb))
-  );
-  min-height: 100vh;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: theme('colors.dark.lighter');
-}
-
-::-webkit-scrollbar-thumb {
-  background: theme('colors.primary.DEFAULT');
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: theme('colors.primary.dark');
-}
-
-/* Animations */
-@keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 5px theme('colors.primary.DEFAULT'),
-                0 0 20px theme('colors.primary.DEFAULT');
+@keyframes animatedgradient {
+  0% {
+    background-position: 0% 50%;
   }
   50% {
-    box-shadow: 0 0 10px theme('colors.primary.DEFAULT'),
-                0 0 30px theme('colors.primary.DEFAULT');
+    background-position: 100% 50%;
   }
-}
-
-.animate-glow {
-  animation: glow 2s ease-in-out infinite;
-}
-
-/* Glass Effect */
-.glass {
-  background: rgba(45, 45, 45, 0.2);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 255, 0, 0.1);
-}
-
-/* Button Styles */
-.btn {
-  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 ease-in-out;
-}
-
-.btn-primary {
-  @apply bg-primary text-dark hover:bg-primary-dark focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark;
-}
-
-.btn-secondary {
-  @apply bg-dark-lighter text-primary hover:bg-dark border border-primary/20 hover:border-primary;
-}
-
-/* Input Styles */
-.input {
-  @apply w-full px-4 py-2 rounded-lg border bg-dark-lighter border-primary/20 
-         focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-         text-primary placeholder-primary/50;
-}
-
-/* Card Styles */
-.card {
-  @apply bg-dark-lighter rounded-xl p-6
-         border border-primary/20 hover:border-primary/40
-         transition-all duration-200;
-}
-
-/* Typography */
-h1, h2, h3, h4, h5, h6 {
-  @apply font-bold tracking-tight text-primary;
-}
-
-h1 {
-  @apply text-4xl md:text-5xl;
-}
-
-h2 {
-  @apply text-3xl md:text-4xl;
-}
-
-h3 {
-  @apply text-2xl md:text-3xl;
-}
-
-/* Link Styles */
-.link {
-  @apply text-primary hover:text-primary-light underline-offset-4 hover:underline
-         transition-colors duration-200;
-}
-
-/* Loading Spinner */
-.spinner {
-  @apply animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent;
+  100% {
+    background-position: 0% 50%;
+  }
 }
