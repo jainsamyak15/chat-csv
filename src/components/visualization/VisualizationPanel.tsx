@@ -34,13 +34,12 @@ interface VisualizationData {
   }[];
 }
 
-// Default empty data to prevent errors
 const defaultData: VisualizationData = {
   labels: [],
   datasets: [{
     label: 'No data',
     data: [],
-    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+    backgroundColor: 'rgba(0, 255, 0, 0.5)',
   }]
 };
 
@@ -53,15 +52,7 @@ export function VisualizationPanel({ selectedFileId }: VisualizationPanelProps) 
       if (!response.ok) {
         throw new Error('Failed to fetch visualization data');
       }
-      const responseData = await response.json();
-      
-      // Ensure the data is in the correct format
-      if (!responseData || !responseData.labels || !responseData.datasets) {
-        console.error('Invalid visualization data format:', responseData);
-        return defaultData;
-      }
-      
-      return responseData;
+      return response.json();
     },
     enabled: !!selectedFileId,
   });
@@ -70,7 +61,7 @@ export function VisualizationPanel({ selectedFileId }: VisualizationPanelProps) 
 
   if (!selectedFileId) {
     return (
-      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+      <div className="p-4 text-center text-primary/50">
         Select a file to view its visualization
       </div>
     );
@@ -79,14 +70,14 @@ export function VisualizationPanel({ selectedFileId }: VisualizationPanelProps) 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div className="spinner" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 text-center text-red-500">
+      <div className="p-4 text-center text-error">
         Error loading visualization. Please try again.
       </div>
     );
@@ -102,14 +93,36 @@ export function VisualizationPanel({ selectedFileId }: VisualizationPanelProps) 
           plugins: {
             legend: {
               position: 'top' as const,
+              labels: {
+                color: '#00ff00',
+              },
             },
             title: {
               display: true,
               text: 'Data Visualization',
+              color: '#00ff00',
+            },
+          },
+          scales: {
+            x: {
+              grid: {
+                color: 'rgba(0, 255, 0, 0.1)',
+              },
+              ticks: {
+                color: '#00ff00',
+              },
+            },
+            y: {
+              grid: {
+                color: 'rgba(0, 255, 0, 0.1)',
+              },
+              ticks: {
+                color: '#00ff00',
+              },
             },
           },
         }}
       />
     </div>
   );
-} 
+}

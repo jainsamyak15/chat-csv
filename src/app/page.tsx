@@ -10,28 +10,28 @@ export default function Home() {
   const [selectedFileId, setSelectedFileId] = useState<string>();
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <main className="min-h-screen bg-dark text-primary">
       <div className="container mx-auto p-4 py-8">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">
+        <header className="mb-8 text-center">
+          <h1 className="text-4xl font-bold mb-4 animate-glow inline-block">
             Chat CSV
           </h1>
-          <p className="text-center text-gray-600 dark:text-gray-300">
-            Upload your CSV files and chat with your data
+          <p className="text-primary/70">
+            Upload your CSV files and chat with your data using natural language
           </p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+            <div className="card">
+              <h2 className="text-xl font-semibold mb-4">
                 Upload CSV File
               </h2>
               <FileUpload />
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+            <div className="card">
+              <h2 className="text-xl font-semibold mb-4">
                 Chat with Your Data
               </h2>
               <FileList
@@ -46,8 +46,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+          <div className="card">
+            <h2 className="text-xl font-semibold mb-4">
               Data Visualization
             </h2>
             <VisualizationPanel selectedFileId={selectedFileId} />
@@ -56,4 +56,4 @@ export default function Home() {
       </div>
     </main>
   );
-} 
+}
