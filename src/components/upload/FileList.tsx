@@ -1,7 +1,12 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { File } from '@prisma/client';
+
+interface File {
+  id: string;
+  name: string;
+  createdAt: string;
+}
 
 interface FileListProps {
   onFileSelect: (fileId: string) => void;
@@ -11,7 +16,7 @@ interface FileListProps {
 export function FileList({ onFileSelect, selectedFileId }: FileListProps) {
   console.log('FileList: Rendering with selectedFileId:', selectedFileId);
 
-  const { data: files, isLoading, error } = useQuery<File[]>({
+  const { data, isLoading, error } = useQuery<File[]>({
     queryKey: ['files'],
     queryFn: async () => {
       console.log('FileList: Fetching files...');
@@ -22,11 +27,11 @@ export function FileList({ onFileSelect, selectedFileId }: FileListProps) {
       }
       const data = await response.json();
       console.log('FileList: Files fetched successfully:', data);
-      return data;
+      return data || [];
     },
   });
 
-  console.log('FileList: Current state:', { files, isLoading, error });
+  console.log('FileList: Current state:', { files: data, isLoading, error });
 
   if (isLoading) {
     return (
@@ -45,7 +50,7 @@ export function FileList({ onFileSelect, selectedFileId }: FileListProps) {
     );
   }
 
-  if (!files || files.length === 0) {
+  if (!data || data.length === 0) {
     console.log('FileList: No files available');
     return (
       <div className="p-4 text-center text-gray-500 dark:text-gray-400">
@@ -54,7 +59,7 @@ export function FileList({ onFileSelect, selectedFileId }: FileListProps) {
     );
   }
 
-  console.log('FileList: Rendering file list with', files.length, 'files');
+  console.log('FileList: Rendering file list with', data.length, 'files');
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -69,7 +74,7 @@ export function FileList({ onFileSelect, selectedFileId }: FileListProps) {
         className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="">Select a file...</option>
-        {files.map((file) => (
+        {Array.isArray(data) && data.map((file) => (
           <option key={file.id} value={file.id}>
             {file.name}
           </option>

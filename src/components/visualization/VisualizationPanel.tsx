@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { File } from '@prisma/client';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,19 +34,39 @@ interface VisualizationData {
   }[];
 }
 
+// Default empty data to prevent errors
+const defaultData: VisualizationData = {
+  labels: [],
+  datasets: [{
+    label: 'No data',
+    data: [],
+    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+  }]
+};
+
 export function VisualizationPanel({ selectedFileId }: VisualizationPanelProps) {
-  const { data: visualizationData, isLoading } = useQuery<VisualizationData>({
+  const { data, isLoading, error } = useQuery<VisualizationData>({
     queryKey: ['visualization', selectedFileId],
     queryFn: async () => {
-      if (!selectedFileId) return null;
+      if (!selectedFileId) return defaultData;
       const response = await fetch(`/api/visualization?fileId=${selectedFileId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch visualization data');
       }
-      return response.json();
+      const responseData = await response.json();
+      
+      // Ensure the data is in the correct format
+      if (!responseData || !responseData.labels || !responseData.datasets) {
+        console.error('Invalid visualization data format:', responseData);
+        return defaultData;
+      }
+      
+      return responseData;
     },
     enabled: !!selectedFileId,
   });
+
+  const visualizationData = data || defaultData;
 
   if (!selectedFileId) {
     return (
@@ -65,10 +84,10 @@ export function VisualizationPanel({ selectedFileId }: VisualizationPanelProps) 
     );
   }
 
-  if (!visualizationData) {
+  if (error) {
     return (
-      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-        No visualization data available for this file
+      <div className="p-4 text-center text-red-500">
+        Error loading visualization. Please try again.
       </div>
     );
   }

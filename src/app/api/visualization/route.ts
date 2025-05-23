@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/db/client';
+import { prisma } from '@/lib/prisma';
 import redis from '@/lib/redis/client';
 import { CACHE_KEYS, CACHE_TTL } from '@/lib/redis/client';
 import { readFile } from 'fs/promises';
@@ -38,6 +38,17 @@ export async function GET(request: NextRequest) {
       skip_empty_lines: true,
     });
 
+    if (!records || records.length === 0) {
+      return NextResponse.json({
+        labels: [],
+        datasets: [{
+          label: 'No data',
+          data: [],
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+        }],
+      });
+    }
+
     // Process data based on query
     let visualizationData;
     if (query?.includes('distribution')) {
@@ -50,29 +61,55 @@ export async function GET(request: NextRequest) {
       }, {});
 
       visualizationData = {
-        type: 'bar',
-        data: {
-          labels: Object.keys(counts),
-          datasets: [{
-            label: `Distribution of ${column}`,
-            data: Object.values(counts),
-            backgroundColor: 'rgba(54, 162, 235, 0.5)',
-          }],
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true,
-            },
-          },
-        },
+        labels: Object.keys(counts),
+        datasets: [{
+          label: `Distribution of ${column}`,
+          data: Object.values(counts),
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+        }],
       };
     } else {
-      // Default: Show first 10 rows as a table
-      visualizationData = {
-        type: 'table',
-        data: records.slice(0, 10),
-      };
+      // Get the first numeric column for visualization
+      const columns = Object.keys(records[0] || {});
+      
+      // Find a numeric column to use for the chart
+      let numericColumn = '';
+      for (const col of columns) {
+        // Skip empty column names
+        if (!col.trim()) continue;
+        
+        // Check if the column has numeric values
+        const hasNumericValues = records.some((r: any) => !isNaN(parseFloat(r[col])));
+        if (hasNumericValues) {
+          numericColumn = col;
+          break;
+        }
+      }
+      
+      if (numericColumn) {
+        // Use row indices as labels if no suitable label column
+        const labels = records.slice(0, 10).map((_: any, i: number) => `Row ${i+1}`);
+        const data = records.slice(0, 10).map((r: any) => parseFloat(r[numericColumn]) || 0);
+        
+        visualizationData = {
+          labels,
+          datasets: [{
+            label: numericColumn,
+            data,
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+          }],
+        };
+      } else {
+        // If no numeric column found, just show counts of entries
+        visualizationData = {
+          labels: ['Dataset Entries'],
+          datasets: [{
+            label: 'Number of Records',
+            data: [records.length],
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+          }],
+        };
+      }
     }
 
     // Cache the result
@@ -85,9 +122,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(visualizationData);
   } catch (error) {
     console.error('Visualization error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate visualization' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      labels: ['Error'],
+      datasets: [{
+        label: 'Failed to generate visualization',
+        data: [0],
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+      }],
+    });
   }
 } 

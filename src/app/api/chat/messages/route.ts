@@ -1,18 +1,34 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const fileId = searchParams.get('fileId');
+
+    if (!fileId) {
+      return NextResponse.json(
+        { error: 'fileId is required' },
+        { status: 400 }
+      );
+    }
+
+    // Find chat session for this file
+    const chatSession = await prisma.chatSession.findFirst({
+      where: { fileId }
+    });
+
+    if (!chatSession) {
+      // No chat session yet, return empty array
+      return NextResponse.json([]);
+    }
+
     const messages = await prisma.message.findMany({
+      where: {
+        chatSessionId: chatSession.id
+      },
       orderBy: {
         createdAt: 'asc'
-      },
-      include: {
-        chatSession: {
-          include: {
-            file: true
-          }
-        }
       }
     });
     
