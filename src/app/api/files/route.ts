@@ -15,16 +15,20 @@ export async function GET() {
     });
     
     console.log('Files API: Raw database response:', JSON.stringify(files, null, 2));
+    
+    // Format the response for the client
+    const formattedFiles = files.map((f: File) => ({
+      id: f.id,
+      name: f.name,
+      createdAt: f.createdAt
+    }));
+    
     console.log('Files API: Files fetched successfully:', {
       count: files.length,
-      files: files.map((f: File) => ({
-        id: f.id,
-        name: f.name,
-        createdAt: f.createdAt
-      }))
+      files: formattedFiles
     });
 
-    return NextResponse.json(files);
+    return NextResponse.json(formattedFiles);
   } catch (error) {
     console.error('Files API: Error fetching files:', error);
     if (error instanceof Error) {

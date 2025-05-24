@@ -10,7 +10,6 @@ export function FileUpload() {
 
   const uploadFile = useMutation({
     mutationFn: async (file: File) => {
-      console.log('FileUpload: Starting upload for file:', file.name);
       const formData = new FormData();
       formData.append('file', file);
 
@@ -20,21 +19,17 @@ export function FileUpload() {
       });
 
       if (!response.ok) {
-        console.error('FileUpload: Upload failed:', response.status, response.statusText);
         throw new Error('Upload failed');
       }
 
-      const data = await response.json();
-      console.log('FileUpload: Upload successful:', data);
-      return data;
+      return response.json();
     },
     onSuccess: () => {
-      console.log('FileUpload: Invalidating files query');
       queryClient.invalidateQueries({ queryKey: ['files'] });
       setUploading(false);
     },
     onError: (error) => {
-      console.error('FileUpload: Upload error:', error);
+      console.error('Upload error:', error);
       setUploading(false);
     },
   });
@@ -42,8 +37,6 @@ export function FileUpload() {
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       if (acceptedFiles.length === 0) return;
-
-      console.log('FileUpload: File dropped:', acceptedFiles[0].name);
       setUploading(true);
       await uploadFile.mutateAsync(acceptedFiles[0]);
     },
@@ -65,8 +58,8 @@ export function FileUpload() {
       className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
         ${
           isDragActive
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-            : 'border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-500'
+            ? 'border-primary bg-primary/10'
+            : 'border-primary/20 hover:border-primary'
         }
         ${uploading ? 'opacity-50 cursor-not-allowed' : ''}
       `}
@@ -76,7 +69,7 @@ export function FileUpload() {
         <div className="flex justify-center">
           <svg
             className={`w-12 h-12 ${
-              isDragActive ? 'text-blue-500' : 'text-gray-400'
+              isDragActive ? 'text-primary' : 'text-primary/50'
             }`}
             fill="none"
             stroke="currentColor"
@@ -90,9 +83,12 @@ export function FileUpload() {
             />
           </svg>
         </div>
-        <div className="text-gray-600 dark:text-gray-300">
+        <div className="text-primary/70">
           {uploading ? (
-            <p>Uploading...</p>
+            <div className="flex items-center justify-center space-x-2">
+              <div className="spinner h-5 w-5" />
+              <p>Uploading...</p>
+            </div>
           ) : isDragActive ? (
             <p>Drop your CSV file here</p>
           ) : (
@@ -103,11 +99,11 @@ export function FileUpload() {
           )}
         </div>
         {uploadFile.isError && (
-          <p className="text-red-500 text-sm">
+          <p className="text-error text-sm">
             Error uploading file. Please try again.
           </p>
         )}
       </div>
     </div>
   );
-} 
+}

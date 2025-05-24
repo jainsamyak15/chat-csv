@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { File } from '@prisma/client';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,11 +34,20 @@ interface VisualizationData {
   }[];
 }
 
+const defaultData: VisualizationData = {
+  labels: [],
+  datasets: [{
+    label: 'No data',
+    data: [],
+    backgroundColor: 'rgba(0, 255, 0, 0.5)',
+  }]
+};
+
 export function VisualizationPanel({ selectedFileId }: VisualizationPanelProps) {
-  const { data: visualizationData, isLoading } = useQuery<VisualizationData>({
+  const { data, isLoading, error } = useQuery<VisualizationData>({
     queryKey: ['visualization', selectedFileId],
     queryFn: async () => {
-      if (!selectedFileId) return null;
+      if (!selectedFileId) return defaultData;
       const response = await fetch(`/api/visualization?fileId=${selectedFileId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch visualization data');
@@ -49,9 +57,11 @@ export function VisualizationPanel({ selectedFileId }: VisualizationPanelProps) 
     enabled: !!selectedFileId,
   });
 
+  const visualizationData = data || defaultData;
+
   if (!selectedFileId) {
     return (
-      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+      <div className="p-4 text-center text-primary/50">
         Select a file to view its visualization
       </div>
     );
@@ -60,15 +70,15 @@ export function VisualizationPanel({ selectedFileId }: VisualizationPanelProps) 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div className="spinner" />
       </div>
     );
   }
 
-  if (!visualizationData) {
+  if (error) {
     return (
-      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-        No visualization data available for this file
+      <div className="p-4 text-center text-error">
+        Error loading visualization. Please try again.
       </div>
     );
   }
@@ -83,14 +93,36 @@ export function VisualizationPanel({ selectedFileId }: VisualizationPanelProps) 
           plugins: {
             legend: {
               position: 'top' as const,
+              labels: {
+                color: '#00ff00',
+              },
             },
             title: {
               display: true,
               text: 'Data Visualization',
+              color: '#00ff00',
+            },
+          },
+          scales: {
+            x: {
+              grid: {
+                color: 'rgba(0, 255, 0, 0.1)',
+              },
+              ticks: {
+                color: '#00ff00',
+              },
+            },
+            y: {
+              grid: {
+                color: 'rgba(0, 255, 0, 0.1)',
+              },
+              ticks: {
+                color: '#00ff00',
+              },
             },
           },
         }}
       />
     </div>
   );
-} 
+}

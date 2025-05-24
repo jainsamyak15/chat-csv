@@ -2,6 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Send, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Message {
   id: string;
@@ -18,8 +21,8 @@ export function ChatInterface({ fileId }: ChatInterfaceProps) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Fetch messages for selected file
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ['messages', fileId],
     queryFn: async () => {
@@ -71,83 +74,97 @@ export function ChatInterface({ fileId }: ChatInterfaceProps) {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+    <div className="flex flex-col h-[600px] bg-card rounded-lg border">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 space-y-2">
-            <svg
-              className="w-12 h-12"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        <AnimatePresence initial={false}>
+          {messages.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center h-full text-muted-foreground space-y-2"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-              />
-            </svg>
-            <p className="text-lg font-medium">No messages yet</p>
-            <p className="text-sm">Start a conversation with your data</p>
-          </div>
-        ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.role === 'user' ? 'justify-end' : 'justify-start'
-              }`}
-            >
-              <div
-                className={`max-w-[80%] rounded-lg p-3 ${
-                  message.role === 'user'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+              <svg
+                className="w-12 h-12"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                />
+              </svg>
+              <p className="text-lg font-medium">No messages yet</p>
+              <p className="text-sm">Start a conversation with your data</p>
+            </motion.div>
+          ) : (
+            messages.map((message) => (
+              <motion.div
+                key={message.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className={`flex ${
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
-                {message.content}
-              </div>
-            </div>
-          ))
-        )}
+                <div
+                  className={`max-w-[80%] rounded-lg p-3 ${
+                    message.role === 'user'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted'
+                  }`}
+                >
+                  {message.content}
+                </div>
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <form onSubmit={handleSubmit} className="p-4 border-t">
         <div className="flex space-x-2">
-          <input
-            type="text"
+          <textarea
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Ask about your data..."
-            className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="flex-1 min-h-[40px] max-h-[120px] px-3 py-2 rounded-md bg-background border resize-none focus:outline-none focus:ring-1 focus:ring-primary"
             disabled={sendMessage.isPending}
           />
-          <button
+          <Button
             type="submit"
             disabled={!input.trim() || sendMessage.isPending}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="h-10"
           >
             {sendMessage.isPending ? (
-              <div className="flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Sending...</span>
-              </div>
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              'Send'
+              <Send className="w-4 h-4" />
             )}
-          </button>
+          </Button>
         </div>
       </form>
     </div>
   );
-} 
+}

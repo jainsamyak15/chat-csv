@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -10,13 +8,15 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379
       - DATABASE_URL=file:/app/prisma/data.db
+      - OLLAMA_API_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=llama2
     volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/.next
-      - sqlite_data:/app/prisma
+      - ./uploads:/app/uploads
+      - ./prisma:/app/prisma
     depends_on:
       - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   redis:
     image: redis:7-alpine
@@ -26,5 +26,4 @@ services:
       - redis_data:/data
 
 volumes:
-  redis_data:
-  sqlite_data: 
+  redis_data: 
